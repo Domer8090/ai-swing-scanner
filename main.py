@@ -83,7 +83,16 @@ def log_csv(ticker, module, status, details=""):
 
 def load_data(ticker, tf):
     df = yf.download(ticker, period=LOOKBACK, interval=tf, progress=False)
-    return df if not df.empty else pd.DataFrame()
+    if df.empty:
+        return pd.DataFrame()
+
+    # FORCE 1D SERIES (fixes ta bug)
+    for col in ["Open", "High", "Low", "Close", "Adj Close", "Volume"]:
+        if col in df.columns:
+            df[col] = df[col].squeeze()
+
+    return df
+
 
 # =============================
 # SCAN FUNCTION
