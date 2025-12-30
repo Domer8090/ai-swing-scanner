@@ -1,0 +1,6 @@
+yfinance
+ta
+tqdm
+requests
+pandas
+numpy
