@@ -103,8 +103,10 @@ def scan_ticker(ticker):
         if df.empty or len(df) < 200:
             return
 
-        close = df["Close"]
-        low = df["Low"]
+        close = df["Close"].squeeze()
+        low = df["Low"].squeeze()
+
+
 
         df["EMA20"] = ta.trend.ema_indicator(close, 20)
         df["EMA50"] = ta.trend.ema_indicator(close, 50)
@@ -139,7 +141,9 @@ def scan_ticker(ticker):
         if df_mr.empty:
             return
 
-        rsi = ta.momentum.rsi(df_mr["Close"], 14).dropna().iloc[-1]
+        close_mr = df_mr["Close"].squeeze()
+        rsi = ta.momentum.rsi(close_mr, 14).dropna().iloc[-1]
+
         if rsi < 20 or rsi > 80:
             if not seen(ticker, "MEANREV"):
                 remember(ticker, "MEANREV")
