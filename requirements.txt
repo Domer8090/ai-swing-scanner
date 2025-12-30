@@ -1,6 +1,7 @@
 yfinance
+pandas
+numpy
 ta
 tqdm
 requests
-pandas
-numpy
+pytz
