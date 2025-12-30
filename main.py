@@ -71,17 +71,13 @@ for ticker in TICKERS:
         if df_trend.empty or len(df_trend) < 250:
             continue
 
-        close = df_trend["Close"]
-        high = df_trend["High"]
-        low = df_trend["Low"]
-
-        if close.iloc[-1] < MIN_PRICE:
+        if float(df_trend["Close"].iloc[-1]) < MIN_PRICE:
             continue
 
-        df_trend["EMA20"] = ta.trend.ema_indicator(close, 20)
-        df_trend["EMA50"] = ta.trend.ema_indicator(close, 50)
-        df_trend["SMA200"] = ta.trend.sma_indicator(close, 200)
-        df_trend["RSI"] = ta.momentum.rsi(close, 14)
+        df_trend["EMA20"] = ta.trend.ema_indicator(df_trend["Close"], 20)
+        df_trend["EMA50"] = ta.trend.ema_indicator(df_trend["Close"], 50)
+        df_trend["SMA200"] = ta.trend.sma_indicator(df_trend["Close"], 200)
+        df_trend["RSI"] = ta.momentum.rsi(df_trend["Close"], 14)
 
         df_trend = df_trend.dropna()
 
@@ -89,20 +85,21 @@ for ticker in TICKERS:
         prev = df_trend.iloc[-2]
 
         trend_bias = (
-            last["Close"] > last["SMA200"] and
-            last["EMA20"] > last["EMA50"] > last["SMA200"]
+            last["Close"].item() > last["SMA200"].item() and
+            last["EMA20"].item() > last["EMA50"].item() > last["SMA200"].item()
         )
 
         pullback = (
-            prev["Close"] > prev["EMA20"] and
-            last["Close"] <= last["EMA20"]
+            prev["Close"].item() > prev["EMA20"].item() and
+            last["Close"].item() <= last["EMA20"].item()
         )
 
-        rsi_ok = 40 <= last["RSI"] <= 55
+        rsi_ok = 40 <= last["RSI"].item() <= 55
 
         if trend_bias and pullback and rsi_ok:
-            swing_low = low.tail(6).min()
-            entry = last["Close"]
+            swing_low = df_trend["Low"].tail(6).min().item()
+
+            entry = last["Close"].item()
             stop = swing_low * 0.995
             risk = entry - stop
 
@@ -117,13 +114,13 @@ for ticker in TICKERS:
                     f"Stop: ${stop:.2f}\n"
                     f"TP1: ${tp1:.2f}\n"
                     f"TP2: ${tp2:.2f}\n"
-                    f"RSI: {last['RSI']:.1f}\n"
+                    f"RSI: {last['RSI'].item():.1f}\n"
                     f"TF: 4H\n"
                     f"{datetime.now().strftime('%Y-%m-%d %H:%M')}"
                 )
 
                 print("✅ Trend alert sent")
-                continue  # Prevent double exposure
+                continue
 
         # =============================
         # MEAN REVERSION MODULE (1H)
@@ -133,29 +130,26 @@ for ticker in TICKERS:
         if df_mr.empty or len(df_mr) < 200:
             continue
 
-        close = df_mr["Close"]
-
-        df_mr["EMA20"] = ta.trend.ema_indicator(close, 20)
-        df_mr["EMA50"] = ta.trend.ema_indicator(close, 50)
-        df_mr["RSI"] = ta.momentum.rsi(close, 14)
+        df_mr["EMA20"] = ta.trend.ema_indicator(df_mr["Close"], 20)
+        df_mr["EMA50"] = ta.trend.ema_indicator(df_mr["Close"], 50)
+        df_mr["RSI"] = ta.momentum.rsi(df_mr["Close"], 14)
 
         df_mr = df_mr.dropna()
         last = df_mr.iloc[-1]
 
-        extreme_oversold = last["RSI"] < 10
-        extreme_overbought = last["RSI"] > 90
+        rsi_val = last["RSI"].item()
 
-        if extreme_oversold or extreme_overbought:
-            direction = "LONG" if extreme_oversold else "SHORT"
-            target = last["EMA20"]
+        if rsi_val < 10 or rsi_val > 90:
+            direction = "LONG" if rsi_val < 10 else "SHORT"
+            target = last["EMA20"].item()
 
             send_discord(
                 f"⚡ **MEAN REVERSION SETUP**\n"
                 f"Ticker: {ticker}\n"
                 f"Direction: {direction}\n"
-                f"Entry: ${last['Close']:.2f}\n"
+                f"Entry: ${last['Close'].item():.2f}\n"
                 f"Target (EMA20): ${target:.2f}\n"
-                f"RSI: {last['RSI']:.1f}\n"
+                f"RSI: {rsi_val:.1f}\n"
                 f"TF: 1H\n"
                 f"{datetime.now().strftime('%Y-%m-%d %H:%M')}"
             )
@@ -166,4 +160,5 @@ for ticker in TICKERS:
         print(f"❌ Error on {ticker}: {e}")
 
 print("\n✅ Scan complete.")
+
 
