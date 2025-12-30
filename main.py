@@ -9,6 +9,12 @@ import requests
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
+from utils.market import market_is_open
+
+if not market_is_open():
+    print("⏭ Market closed — scan skipped")
+    exit()
+
 
 # =========================
 # CONFIG
