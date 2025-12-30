@@ -22,3 +22,9 @@ jobs:
 
     - name: Run scanner
       run: python main.py
+      
+    - name: Upload scan logs
+      uses: actions/upload-artifact@v4
+      with:
+        name: scan-logs
+        path: logs/
