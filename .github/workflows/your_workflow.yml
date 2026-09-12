@@ -1,11 +1,11 @@
 name: AI Swing Scanner
 
-on:
-  schedule:
-    # 10:00 AM ET (15:00 UTC)
-    - cron: "0 15 * * 1-5"
-    # 2:00 PM ET (19:00 UTC)
-    - cron: "0 19 * * 1-5"
+# on:
+#   schedule:
+#     # 10:00 AM ET (15:00 UTC)
+#     - cron: "0 15 * * 1-5"
+#     # 2:00 PM ET (19:00 UTC)
+#     - cron: "0 19 * * 1-5"
 
   workflow_dispatch:
 
